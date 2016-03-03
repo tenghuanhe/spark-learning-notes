@@ -8,3 +8,5 @@ shuffle字面的意思是洗牌；改组。
 
 这样的分布由于其通用性而与某一个具体的operation无关，为了计算某个operation的结果所需要的数据很可能不在合适的地方，也就是不在同一个partition，而是在多个不同的patition，甚至不同node上。
 Spark在进行计算的时候，一个task只会对一个partition进行运算。例如在执行reduceByKey的一个reduce task的时候，这一个reduce task所需要的数据在所有的partitions上都可能存在，为了计算这一个单独reduce task，Spark需要从所有的partitions上读取所需要的数据，然后找到每一个key对应的所有values，然后将不同partition得到的结果合并到一起来得到每一个key的最终结果，这样的reduce task一般都不止一个。这样一个过程就叫做shuffle。由于每一个reduce task都需要来自所有partitions的结果，读取这些partiton需要Disk IO和Memory IO，对于处在不同node上面的partition还需要额外的Network IO，所以shuffle的代价相对于map等可以直接mpipeline的操作是非常昂贵的。
+
+能够触发shuffle的操作包括**repartition**操作比如**repartition**和**coalesce**，**Bykey**操作比如**groupByKey**和**reduceByKey**，以及**join**操作比如**cogroup**和**join**。
